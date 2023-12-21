@@ -70,22 +70,39 @@ def watchlist(user):
 
 @app.route('/stats/<market>', methods=['GET'])
 def statistics(market):
-    stats_map = {
-        'EURUSD=X' : {
-            'value': 1.102,
-            'cv': 0.0011,
 
-            'day':([0.9948, 1.00364], [1.001, 1.0025]),
-            'week':([0.98641, 1.17557], [1.001, 1.0425]),
-
-            '1w': 0.19,
-            '1m': -1.59,
-            '3m': -5.09,
-            '6m': -9.41,
-            '1y': -14.89
-        }
+    pair_map = {
+        "EURUSD=X": "Euro / US Dollar",
+        "USDJPY=X": "US Dollar / Japanese Yen",
+        "GBPUSD=X": "British Pound / US Dollar",
+        "AUDUSD=X": "Australian Dollar / US Dollar",
+        "USDCAD=X": "US Dollar / Canadian Dollar",
+        "USDCHF=X": "US Dollar / Swiss Franc",
+        "NZDUSD=X": "New Zealand Dollar / US Dollar",
+        "EURJPY=X": "Euro / Japanese Yen",
+        "GBPJPY=X": "British Pound / Japanese Yen",
+        "EURGBP=X": "Euro / British Pound"
     }
-    return jsonify(stats_map[market])
+
+    
+    df = chart(market,'1D', js=False)[['date', 'c']] \
+        .sort_values(by='date', ascending=False) \
+        .reset_index() \
+        .drop('index', axis=1) \
+    
+    stats = {
+        "name" : market[:-2],
+        "fname" : pair_map[market] if pair_map[market] else 0,
+        "range" : (min(df['c']), max(df['c'])),
+        "c1D" : -df['c'].diff(periods = 2)[2], # change 1D
+        "c4D" : -df['c'].diff(periods = 5)[5], # change 4D
+        "c1W" : -df['c'].diff(periods = 8)[8], # change 1W
+        "c1M" : -df['c'].diff(periods = 31)[31], # change 1M
+        "c3M" : -df['c'].diff(periods = 93)[93], # change 3M
+        "c3M" : -df['c'].diff(periods = 186)[186], # change 6M
+    }
+
+    return jsonify(stats)
 
 if __name__ == '__main__':
     app.run(debug=True)
