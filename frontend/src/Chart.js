@@ -7,12 +7,10 @@ function Chart() {
     const [market, setMarket] = useState('EURUSD')
     const [interval, setInterval] = useState('1d')
 
-    let slice = 20;
-
-    function changeMarket(e){
+    function handleMarketChange(e){
         setMarket(e.target.value);
     }
-    function changeInterval(e){
+    function handleIntervalChange(e){
         setInterval(e.target.value);
     }
 
@@ -149,20 +147,17 @@ function Chart() {
                     .call(d3.axisBottom(x));
             
             const minMax = (d) => {
-
-                let everything = []
+                let everything = [];
                 for (const i in d) {
                     for (const k in d[i]) {
-                        if (d[i][k] < 1000) {
-                            if (k != 'index'){
-                                everything.push(d[i][k])
-                            }
+                        if (['o','h','l','c'].includes(k)) {
+                            everything.push(d[i][k]);
                         }
                     }
                 }
                 let min = Math.min(...everything),
-                    max = Math.max(...everything)
-                return [min, max]
+                    max = Math.max(...everything);
+                return [min, max];
             }
 
             const y = d3.scaleLinear()
@@ -281,7 +276,15 @@ function Chart() {
     };
 
     const renderStats = () => {
-        
+        if (stats) {
+            return (
+                <div id='stats'>
+                    <h3 id="stats-header">{stats['name']}</h3>
+                    <h4 id='stats-subheader'>{stats['fname']}</h4>
+                </div>
+
+            )
+        }
     };
 
     let resizeTimer;
@@ -294,14 +297,14 @@ function Chart() {
         <div id='body'>
             <div id='header' className="module">
                 <img src={require('./logo.png')} id='logo' className="header-element"/>
-                <select name="markets" id="market-selector" className="header-element" value={market} onChange={changeMarket}>
+                <select name="markets" id="market-selector" className="header-element" value={market} onChange={handleMarketChange}>
                     {
                         markets.map(
                             (v, i) => <option key={i} value={v}>{v}</option>
                         )
                     }
                 </select>
-                <select name="timeframes" id="timeframe-selector" className="header-element" value={interval} onChange={changeInterval}>
+                <select name="timeframes" id="timeframe-selector" className="header-element" value={interval} onChange={handleIntervalChange}>
                     {
                         timeframes.map(
                             (v, i) => <option key={i} value={v}>{v}</option>
@@ -318,7 +321,7 @@ function Chart() {
                     </div>
                     <div id="stats" className="module">
                         <h2>Stats</h2>
-                        <h3>{market}</h3>
+                        {renderStats()}
                     </div>
                 </div>
             </div>
